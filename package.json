@@ -1,0 +1,25 @@
+{
+	"name": "fb-stream-extractor",
+	"version": "1.0.0",
+	"description": "Browser-context stream extractor for Facebook videos with zero-reencoding FFmpeg export",
+	"type": "module",
+	"scripts": {
+		"build": "node scripts/build.ts",
+		"test": "node --test test/"
+	},
+	"keywords": [
+		"facebook",
+		"stream-extractor",
+		"ffmpeg",
+		"dash",
+		"progressive-mp4",
+		"devtools"
+	],
+	"author": "nathawat <nathawat@noreply.codeberg.org>",
+	"license": "AGPL-3.0-or-later",
+	"devDependencies": {
+		"@types/node": "^22.13.1",
+		"esbuild": "^0.25.0",
+		"typescript": "^5.7.3"
+	}
+}
