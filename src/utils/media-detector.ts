@@ -25,16 +25,18 @@ function decodeBase64Safe(str: string): string {
  * Inspects Facebook's `efg` metadata query param first, then falls back to URL heuristics.
  */
 export function detectMediaType(urlStr: string): MediaType {
+	let pathAndSearch = urlStr;
 	try {
 		const parsed = new URL(
 			urlStr,
 			urlStr.startsWith("http") ? undefined : "https://fb-extractor.internal",
 		);
+		pathAndSearch = parsed.pathname + parsed.search;
 		const efg = parsed.searchParams.get("efg");
 
 		if (efg) {
 			try {
-				const decoded = decodeBase64Safe(decodeURIComponent(efg)).toLowerCase();
+				const decoded = decodeBase64Safe(efg).toLowerCase();
 				if (decoded.includes("audio")) return "audio";
 				if (decoded.includes("video")) return "video";
 			} catch {
@@ -45,7 +47,7 @@ export function detectMediaType(urlStr: string): MediaType {
 		// URL parsing error - fall through to heuristics
 	}
 
-	const lower = urlStr.toLowerCase();
+	const lower = pathAndSearch.toLowerCase();
 	if (lower.includes("audio") || lower.includes("yxvkawo")) {
 		return "audio";
 	}

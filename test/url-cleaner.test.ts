@@ -141,4 +141,18 @@ test("detectMediaType", async (t) => {
 		const url = "https://example.com/asset_12345.mp4";
 		assert.equal(detectMediaType(url), "unknown");
 	});
+
+	await t.test(
+		"does not misclassify audio or generic URLs on video.xx.fbcdn.net as video",
+		() => {
+			const genericFbUrl =
+				"https://video.xx.fbcdn.net/v/t39.25447-2/12345_n.mp4?_nc_cat=101";
+			assert.equal(detectMediaType(genericFbUrl), "unknown");
+		},
+	);
+
+	await t.test("handles efg token without throwing on raw percent values", () => {
+		const url = "https://video.xx.fbcdn.net/stream.mp4?efg=abc%25def";
+		assert.doesNotThrow(() => detectMediaType(url));
+	});
 });
