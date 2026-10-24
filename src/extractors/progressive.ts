@@ -17,10 +17,10 @@ interface Pattern {
 }
 
 const PROGRESSIVE_PATTERNS: Pattern[] = [
-	{ name: "HD Native", regex: /"browser_native_hd_url":"(https:[^"]+)"/ },
-	{ name: "HD Playable", regex: /"playable_url_quality_hd":"(https:[^"]+)"/ },
-	{ name: "SD Native", regex: /"browser_native_sd_url":"(https:[^"]+)"/ },
-	{ name: "SD Playable", regex: /"playable_url":"(https:[^"]+)"/ },
+	{ name: "HD Native", regex: /"browser_native_hd_url":\s*"(https:[^"]+)"/ },
+	{ name: "HD Playable", regex: /"playable_url_quality_hd":\s*"(https:[^"]+)"/ },
+	{ name: "SD Native", regex: /"browser_native_sd_url":\s*"(https:[^"]+)"/ },
+	{ name: "SD Playable", regex: /"playable_url":\s*"(https:[^"]+)"/ },
 ];
 
 /**
@@ -31,8 +31,31 @@ export function extractProgressiveStream(doc?: Document): StreamResult | null {
 		doc ?? (typeof document !== "undefined" ? document : undefined);
 	if (!targetDoc) return null;
 
-	// 1. Check embedded script payloads and HTML content (prioritizing HD quality)
-	const html = targetDoc.documentElement?.innerHTML || "";
+	// 1. Check script tags first to avoid serializing the full DOM tree
+	const scripts = targetDoc.querySelectorAll?.("script");
+	if (scripts && scripts.length > 0) {
+		for (const { name, regex } of PROGRESSIVE_PATTERNS) {
+			for (let i = 0; i < scripts.length; i++) {
+				const scriptText = scripts[i]?.textContent;
+				if (scriptText) {
+					const match = scriptText.match(regex);
+					if (match && match[1]) {
+						return {
+							videoUrl: unescapeUrl(match[1]),
+							audioUrl: null,
+							method: `Progressive MP4 (${name})`,
+						};
+					}
+				}
+			}
+		}
+	}
+
+	// Fall back to scanning full HTML (for synthetic/server DOMs or inline payloads)
+	const html =
+		targetDoc.documentElement?.innerHTML ||
+		(targetDoc as unknown as { innerHTML?: string }).innerHTML ||
+		"";
 	for (const { name, regex } of PROGRESSIVE_PATTERNS) {
 		const match = html.match(regex);
 		if (match && match[1]) {
@@ -45,10 +68,10 @@ export function extractProgressiveStream(doc?: Document): StreamResult | null {
 	}
 
 	// 2. Fall back to active or direct HTML5 <video> elements
-	const videos = Array.from(targetDoc.querySelectorAll("video"));
+	const videos = Array.from(targetDoc.querySelectorAll?.("video") ?? []);
 	const activeVideo =
 		videos.find((v) => !v.paused && v.currentTime > 0) ??
-		targetDoc.querySelector<HTMLVideoElement>('video[src^="http"]');
+		targetDoc.querySelector?.<HTMLVideoElement>('video[src^="http"]');
 
 	if (activeVideo?.src && !activeVideo.src.startsWith("blob:")) {
 		return {
