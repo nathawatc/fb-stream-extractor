@@ -10,6 +10,8 @@ import {
 } from "./extractors/progressive.ts";
 import { extractDashStream } from "./extractors/dash.ts";
 
+declare const copy: ((text: string) => void) | undefined;
+
 const DEFAULT_USER_AGENT =
 	"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
@@ -37,7 +39,7 @@ export function buildFfmpegCommand(
 		return `ffmpeg -user_agent ${escapedUA} -i ${escapedVideo} -user_agent ${escapedUA} -i ${escapedAudio} -map 0:v:0 -map 1:a:0 -c copy -movflags +faststart ${escapedFilename}`;
 	}
 
-	return `ffmpeg -user_agent ${escapedUA} -i ${escapedVideo} -c copy -movflags +faststart ${filename}`;
+	return `ffmpeg -user_agent ${escapedUA} -i ${escapedVideo} -c copy -movflags +faststart ${escapedFilename}`;
 }
 
 /**
@@ -45,13 +47,14 @@ export function buildFfmpegCommand(
  * Tiers: DevTools copy() -> navigator.clipboard -> textarea execCommand
  */
 export async function copyToClipboard(text: string): Promise<boolean> {
-	const globalObj = globalThis as unknown as {
-		copy?: (text: string) => void;
-	};
+	const devToolsCopy =
+		typeof copy === "function"
+			? copy
+			: (globalThis as unknown as { copy?: (text: string) => void }).copy;
 
-	if (typeof globalObj.copy === "function") {
+	if (typeof devToolsCopy === "function") {
 		try {
-			globalObj.copy(text);
+			devToolsCopy(text);
 			return true;
 		} catch {
 			// Fall through to standard APIs
