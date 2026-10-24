@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"build": "node scripts/build.ts",
-		"test": "node --test test/"
+		"test": "node --test test/",
+		"typecheck": "tsc --noEmit"
 	},
 	"keywords": [
 		"facebook",
