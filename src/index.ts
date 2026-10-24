@@ -30,10 +30,11 @@ export function buildFfmpegCommand(
 
 	const escapedUA = shellEscape(userAgent);
 	const escapedVideo = shellEscape(videoUrl);
+	const escapedFilename = shellEscape(filename);
 
 	if (audioUrl) {
 		const escapedAudio = shellEscape(audioUrl);
-		return `ffmpeg -user_agent ${escapedUA} -i ${escapedVideo} -user_agent ${escapedUA} -i ${escapedAudio} -c copy -movflags +faststart ${filename}`;
+		return `ffmpeg -user_agent ${escapedUA} -i ${escapedVideo} -user_agent ${escapedUA} -i ${escapedAudio} -map 0:v:0 -map 1:a:0 -c copy -movflags +faststart ${escapedFilename}`;
 	}
 
 	return `ffmpeg -user_agent ${escapedUA} -i ${escapedVideo} -c copy -movflags +faststart ${filename}`;
