@@ -42,6 +42,13 @@ export function extractDashStream(perf?: Performance): StreamResult | null {
 		if (foundVideo && foundAudio) break;
 	}
 
+	// Pair remaining candidate stream if only one track type was classified
+	if (foundVideo && !foundAudio) {
+		foundAudio = uniqueCleanUrls.find((u) => u !== foundVideo) ?? null;
+	} else if (foundAudio && !foundVideo) {
+		foundVideo = uniqueCleanUrls.find((u) => u !== foundAudio) ?? null;
+	}
+
 	if (foundVideo) {
 		return {
 			videoUrl: foundVideo,
