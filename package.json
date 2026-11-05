@@ -16,7 +16,7 @@
 		"progressive-mp4",
 		"devtools"
 	],
-	"author": "nathawat <nathawat@noreply.codeberg.org>",
+	"author": "Scott <158021536+nathawatc@users.noreply.github.com>",
 	"license": "AGPL-3.0-or-later",
 	"devDependencies": {
 		"@types/node": "^22.13.1",
